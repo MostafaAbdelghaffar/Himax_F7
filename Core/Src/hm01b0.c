@@ -29,6 +29,10 @@ uint8_t HM01B0_ReadRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr) {
     return value;
 }
 
+void HM01B0_Init(void) {
+    // Example: read a read only register
+    uint8_t reg_value = HM01B0_ReadRegister(&hi2c2, SILICON_REV);
+}
 
 
 /*

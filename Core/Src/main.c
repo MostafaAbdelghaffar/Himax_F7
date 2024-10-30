@@ -104,22 +104,9 @@ int main(void)
   MX_I2C2_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-// '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
-  void HM01B0_Init(void) {
-      // Example: write to a specific register to initialise the camera
-      uint8_t data[2]; // Buffer for register address and data
-      data[0] = HM01B0_REGISTER_X;  // Replace with the actual register address
-      data[1] = HM01B0_INIT_VALUE;   // Replace with the value you want to write
-
-      if (HAL_I2C_Master_Transmit(&hi2c2, HIMAX_I2C_ADDR, data, 2, HAL_MAX_DELAY) != HAL_OK) {
-          // Handle error
-          Error_Handler();
-      }
-  }
-
-  // '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
   HM01B0_Init();
-
+  HM01B0_WriteRegister(&hi2c2, IMG_ORIENTATION, 0xAB);
+  uint8_t reg_value = HM01B0_ReadRegister(&hi2c2, IMG_ORIENTATION);
 
   /* USER CODE END 2 */
 

@@ -49,7 +49,8 @@ DMA_HandleTypeDef hdma_i2c2_rx;
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
-
+uint16_t reg_address; // mode select is set at 0x0100
+uint8_t reg_value;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -60,11 +61,42 @@ static void MX_DMA_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
+void HM01B0_Test(void);
+void Blink_once(void);
+void Blink_twice(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HM01B0_Test(void)
+{
+	uint8_t value_to_write = 0x03;
+	printf("Writing to register...\n");
+	if (HM01B0_WriteRegister(&hi2c2, reg_address, value_to_write) != HAL_OK) {
+	    printf("Write failed!\n");
+	    Error_Handler();
+	}
+	printf("Reading from register...\n");
+	if (HM01B0_ReadRegister(&hi2c2, reg_address, &reg_value) != HAL_OK) {
+	    printf("Read failed!\n");
+	    Error_Handler();
+	}
+
+
+	// Optionally, process the read value
+	if (reg_value == value_to_write) {
+		// Successful read
+		//HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Indicate success by toggling an LED
+		Blink_twice(); // if successful
+	} else {
+		// Read value did not match written value
+		Blink_once(); //if unsuccessful
+	}
+
+	HAL_Delay(500); // Delay for readability
+}
+
+
 
 /* USER CODE END 0 */
 
@@ -99,14 +131,14 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
   MX_DMA_Init();
   MX_I2C2_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  HM01B0_Init();
-  HM01B0_WriteRegister(&hi2c2, IMG_ORIENTATION, 0xAB);
-  uint8_t reg_value = HM01B0_ReadRegister(&hi2c2, IMG_ORIENTATION);
+
+  // '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
+  //HM01B0_Init();
+
 
   /* USER CODE END 2 */
 
@@ -114,21 +146,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  Blink_twice();
 //  // '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
     /* USER CODE END WHILE */
 	    // Example: Read from a register to verify communication
-
-	      uint8_t reg_value;
-	      if (HAL_I2C_Master_Receive(&hi2c2, HIMAX_I2C_ADDR, &reg_value, 1, HAL_MAX_DELAY) != HAL_OK) {
-	          // Handle error
-	          Error_Handler();
-	      }
-
-	      // Process the read value or perform any other operations
-	      HAL_Delay(1000); // Delay for readability
-	  // '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
-
+	  HM01B0_Test();
 
     /* USER CODE BEGIN 3 */
   }
@@ -327,6 +349,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /* Configure GPIO pin : L3_Pin */
+  GPIO_InitStruct.Pin = L3_Pin; // Set the pin number to PB14
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // Set as push-pull output
+  GPIO_InitStruct.Pull = GPIO_NOPULL; // No pull-up or pull-down resistors
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
@@ -379,9 +408,45 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
   }
   /* USER CODE END Error_Handler_Debug */
 }
+
+void Blink_once(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
+
+  /* User can add his own implementation to report the HAL error return state */
+  //__disable_irq();
+  while (1)
+  {
+
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
+
+void Blink_twice(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
+
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
+}
+
+
 
 #ifdef  USE_FULL_ASSERT
 /**

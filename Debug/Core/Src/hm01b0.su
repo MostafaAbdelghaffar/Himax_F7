@@ -1,0 +1,2 @@
+../Core/Src/hm01b0.c:53:19:HM01B0_WriteRegister	32	static
+../Core/Src/hm01b0.c:70:19:HM01B0_ReadRegister	40	static

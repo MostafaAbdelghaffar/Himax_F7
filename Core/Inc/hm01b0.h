@@ -8,12 +8,20 @@
 #ifndef INC_HM01B0_H_
 #define INC_HM01B0_H_
 
-void HM01B0_WriteRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr, uint8_t value);
-uint8_t HM01B0_ReadRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr);
+
+/* Includes ------------------------------------------------------------------*/
+#include "hm01b0_reg.h"
+#include "stm32f7xx_hal.h"
+#include <stdint.h>
+
+
+HAL_StatusTypeDef HM01B0_WriteRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr, uint8_t reg_value);
+HAL_StatusTypeDef HM01B0_ReadRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr, uint8_t* reg_value);
+
 void HM01B0_Init(void);
 
 
 #endif /* INC_HM01B0_H_ */
 
 
-#include "hm01b0_reg.h"
+

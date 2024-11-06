@@ -13,6 +13,7 @@
 #include "hm01b0_reg.h"
 #include "stm32f7xx_hal.h"
 #include <stdint.h>
+#include <stdio.h>
 
 
 HAL_StatusTypeDef HM01B0_WriteRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr, uint8_t reg_value);

@@ -29,7 +29,6 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -62,6 +61,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define MCLK_Pin GPIO_PIN_3
 #define MCLK_GPIO_Port GPIOA
+#define LD1_Green_Pin GPIO_PIN_0
+#define LD1_Green_GPIO_Port GPIOB
+#define LD3_Red_Pin GPIO_PIN_14
+#define LD3_Red_GPIO_Port GPIOB
 #define HREF_Pin GPIO_PIN_2
 #define HREF_GPIO_Port GPIOG
 #define PCLK_Pin GPIO_PIN_3
@@ -77,9 +80,8 @@ void Error_Handler(void);
 #define D2_GPIO_Port GPIOD
 #define D3_Pin GPIO_PIN_7
 #define D3_GPIO_Port GPIOD
-
-#define L3_Pin GPIO_PIN_14
-#define L3_GPIO_Port GPIOB
+#define LD2_Blue_Pin GPIO_PIN_7
+#define LD2_Blue_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

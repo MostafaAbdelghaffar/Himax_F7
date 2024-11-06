@@ -18,11 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "hm01b0.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "hm01b0.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,8 +47,9 @@ DMA_HandleTypeDef hdma_i2c2_rx;
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
-uint16_t reg_address; // mode select is set at 0x0100
-uint8_t reg_value;
+uint16_t reg_address= MODE_SELECT; // mode select is set at 0x0100
+uint8_t reg_value=0;
+uint8_t count = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,25 +67,65 @@ void Blink_twice(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void Blue_blink(void)
+{
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD2_Blue_Pin); // Toggle the LED
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD2_Blue_Pin); // Toggle the LED
+}
+void Green_blink(void)
+{
+	  HAL_Delay(100); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD1_Green_Pin); // Toggle the LED
+	  HAL_Delay(100); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD1_Green_Pin); // Toggle the LED
+}
+
+
+
+void Blink_once(void)
+{
+	  HAL_Delay(500); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
+	  HAL_Delay(500); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
+}
+
+void Blink_twice(void)
+{
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
+
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
+	  HAL_Delay(1000); // Delay for 1 second
+	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
+}
+
 void HM01B0_Test(void)
 {
 	uint8_t value_to_write = 0x03;
-	printf("Writing to register...\n");
 	if (HM01B0_WriteRegister(&hi2c2, reg_address, value_to_write) != HAL_OK) {
-	    printf("Write failed!\n");
-	    Error_Handler();
+		Green_blink();
+		Green_blink();
+		count = count + 5;
+
 	}
-	printf("Reading from register...\n");
 	if (HM01B0_ReadRegister(&hi2c2, reg_address, &reg_value) != HAL_OK) {
 	    printf("Read failed!\n");
-	    Error_Handler();
+	    Blue_blink();
+	    count = count + 100;
 	}
 
 
 	// Optionally, process the read value
 	if (reg_value == value_to_write) {
 		// Successful read
-		//HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Indicate success by toggling an LED
+		//HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Indicate success by toggling an LED
 		Blink_twice(); // if successful
 	} else {
 		// Read value did not match written value
@@ -131,6 +170,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
   MX_DMA_Init();
   MX_I2C2_Init();
   MX_TIM2_Init();
@@ -146,11 +186,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  Blink_twice();
+	  HAL_Delay(100);
+	  HM01B0_Test();
 //  // '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
     /* USER CODE END WHILE */
-	    // Example: Read from a register to verify communication
-	  HM01B0_Test();
 
     /* USER CODE BEGIN 3 */
   }
@@ -328,8 +367,19 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, LD1_Green_Pin|LD3_Red_Pin|LD2_Blue_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : LD1_Green_Pin LD3_Red_Pin LD2_Blue_Pin */
+  GPIO_InitStruct.Pin = LD1_Green_Pin|LD3_Red_Pin|LD2_Blue_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : HREF_Pin PCLK_Pin */
   GPIO_InitStruct.Pin = HREF_Pin|PCLK_Pin;
@@ -348,13 +398,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /* Configure GPIO pin : L3_Pin */
-  GPIO_InitStruct.Pin = L3_Pin; // Set the pin number to PB14
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // Set as push-pull output
-  GPIO_InitStruct.Pull = GPIO_NOPULL; // No pull-up or pull-down resistors
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
@@ -409,44 +452,10 @@ void Error_Handler(void)
   while (1)
   {
 	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
+	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-void Blink_once(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
-
-  /* User can add his own implementation to report the HAL error return state */
-  //__disable_irq();
-  while (1)
-  {
-
-  }
-  /* USER CODE END Error_Handler_Debug */
-}
-
-
-void Blink_twice(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
-
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, L3_Pin); // Toggle the LED
-}
-
-
 
 #ifdef  USE_FULL_ASSERT
 /**

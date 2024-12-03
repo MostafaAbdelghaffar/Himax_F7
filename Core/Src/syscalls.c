@@ -30,6 +30,10 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+#include "main.h"  // Ensure main.h is included as it links other peripherals, including UART
+//#include "usart.h" // Recheck this line after confirming path and regeneration
+extern UART_HandleTypeDef huart3;
+
 
 /* Variables */
 extern int __io_putchar(int ch) __attribute__((weak));
@@ -173,4 +177,11 @@ int _execve(char *name, char **argv, char **env)
   (void)env;
   errno = ENOMEM;
   return -1;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+int __io_putchar(int ch)
+{
+    HAL_UART_Transmit(&huart3, (uint8_t*)&ch, 1, HAL_MAX_DELAY); // Use &huart2 if using USART2
+    return ch;
 }

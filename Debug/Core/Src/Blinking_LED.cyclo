@@ -1,0 +1,4 @@
+../Core/Src/Blinking_LED.c:3:6:Blue_blink	1
+../Core/Src/Blinking_LED.c:10:6:Green_blink	1
+../Core/Src/Blinking_LED.c:20:6:Blink_red_once	1
+../Core/Src/Blinking_LED.c:28:6:Blink_red_twice	1

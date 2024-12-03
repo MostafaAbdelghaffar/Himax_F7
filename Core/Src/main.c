@@ -18,9 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "hm01b0.h"
+#include "Blinking_LED.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,10 +48,12 @@ DMA_HandleTypeDef hdma_i2c2_rx;
 
 TIM_HandleTypeDef htim2;
 
+UART_HandleTypeDef huart3;
+
 /* USER CODE BEGIN PV */
 uint16_t reg_address= MODE_SELECT; // mode select is set at 0x0100
 uint8_t reg_value=0;
-uint8_t count = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,77 +63,38 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void HM01B0_Test(void);
-void Blink_once(void);
-void Blink_twice(void);
+void HM01B0_Test(uint8_t value_to_write);
+//void Blink_red_once(void);
+//void Blink_red_twice(void);
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void Blue_blink(void)
+
+void HM01B0_Test(uint8_t value_to_write)
 {
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD2_Blue_Pin); // Toggle the LED
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD2_Blue_Pin); // Toggle the LED
-}
-void Green_blink(void)
-{
-	  HAL_Delay(100); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD1_Green_Pin); // Toggle the LED
-	  HAL_Delay(100); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD1_Green_Pin); // Toggle the LED
-}
-
-
-
-void Blink_once(void)
-{
-	  HAL_Delay(500); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
-	  HAL_Delay(500); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
-}
-
-void Blink_twice(void)
-{
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
-
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
-	  HAL_Delay(1000); // Delay for 1 second
-	  HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Toggle the LED
-}
-
-void HM01B0_Test(void)
-{
-	uint8_t value_to_write = 0x03;
-	if (HM01B0_WriteRegister(&hi2c2, reg_address, value_to_write) != HAL_OK) {
-		Green_blink();
-		Green_blink();
-		count = count + 5;
-
-	}
-	if (HM01B0_ReadRegister(&hi2c2, reg_address, &reg_value) != HAL_OK) {
-	    printf("Read failed!\n");
-	    Blue_blink();
-	    count = count + 100;
-	}
-
+	HM01B0_WriteRegister(reg_address, value_to_write);
+	HAL_Delay(200);
+	uint8_t reg_value = HM01B0_ReadRegister(reg_address);
 
 	// Optionally, process the read value
-	if (reg_value == value_to_write) {
+	if (reg_value == value_to_write)
+	{
 		// Successful read
-		//HAL_GPIO_TogglePin(GPIOB, LD3_Red_Pin); // Indicate success by toggling an LED
-		Blink_twice(); // if successful
-	} else {
+		printf("Success: Reg value %x matched written value %x at address %x\r\n", reg_value, value_to_write, reg_address);
+		HAL_Delay(100);
+	}
+	else
+	{
 		// Read value did not match written value
-		Blink_once(); //if unsuccessful
+		printf("Error: Reg value %x did not match written value %x at address %x\r\n", reg_value, value_to_write, reg_address);
+		HAL_Delay(100);
+
 	}
 
 	HAL_Delay(500); // Delay for readability
@@ -174,7 +139,10 @@ int main(void)
   MX_DMA_Init();
   MX_I2C2_Init();
   MX_TIM2_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  //uint8_t write_3 = 0x03;
+  uint8_t count = 0;
 
   // '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
   //HM01B0_Init();
@@ -184,10 +152,33 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+
+  printf("\033[2J\033[H");
+  HAL_Delay(500);
+  while (count<1)
   {
+	  printf("\r\n======================================================\r\n");
+
+	  //Writing TEST
+	  HM01B0_WriteRegister(reg_address,0x03);
 	  HAL_Delay(100);
-	  HM01B0_Test();
+	  //READING TEST
+	  uint8_t reg_value = HM01B0_ReadRegister(reg_address);
+	  printf("\r\nThe reg_address = 0x%04x , and value = 0x%02x ",reg_address,reg_value);
+	  HAL_Delay(1000);
+
+	  //Writing then reading I2C_clear
+	  HM01B0_WriteRegister(I2C_CLEAR,0x01);
+	  printf("\r\nI2C_Clear is written");
+	  HAL_Delay(100);
+
+	  reg_value = HM01B0_ReadRegister(reg_address);
+	  printf("\r\nThe reg_address = 0x%04x , and value = 0x%02x ",reg_address,reg_value);
+	  HAL_Delay(1000);
+
+	  printf("\r\nCount is %d",count++);
+	  printf("\r\n\n");
+
 //  // '''''''''''''''''''''''''' 30/10/2024 ''''''''''''''''''''''''''''''''''''
     /* USER CODE END WHILE */
 
@@ -253,7 +244,7 @@ static void MX_I2C2_Init(void)
 
   /* USER CODE END I2C2_Init 1 */
   hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x00303D5B;
+  hi2c2.Init.Timing = 0x0010061A; // 400 KHZ
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -335,6 +326,41 @@ static void MX_TIM2_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -366,10 +392,9 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD1_Green_Pin|LD3_Red_Pin|LD2_Blue_Pin, GPIO_PIN_RESET);
@@ -381,11 +406,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : HREF_Pin PCLK_Pin */
-  GPIO_InitStruct.Pin = HREF_Pin|PCLK_Pin;
+  /*Configure GPIO pin : PG2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PCLK_Pin */
+  GPIO_InitStruct.Pin = PCLK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+  HAL_GPIO_Init(PCLK_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : VSync_Pin */
   GPIO_InitStruct.Pin = VSync_Pin;

@@ -59,10 +59,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define MCLK_Pin GPIO_PIN_3
-#define MCLK_GPIO_Port GPIOA
-#define HREF_Pin GPIO_PIN_2
-#define HREF_GPIO_Port GPIOG
+#define LD1_Green_Pin GPIO_PIN_0
+#define LD1_Green_GPIO_Port GPIOB
+#define MCLK_Pin GPIO_PIN_11
+#define MCLK_GPIO_Port GPIOB
+#define LD3_Red_Pin GPIO_PIN_14
+#define LD3_Red_GPIO_Port GPIOB
 #define PCLK_Pin GPIO_PIN_3
 #define PCLK_GPIO_Port GPIOG
 #define VSync_Pin GPIO_PIN_2
@@ -76,6 +78,8 @@ void Error_Handler(void);
 #define D2_GPIO_Port GPIOD
 #define D3_Pin GPIO_PIN_7
 #define D3_GPIO_Port GPIOD
+#define LD2_Blue_Pin GPIO_PIN_7
+#define LD2_Blue_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

@@ -121,6 +121,6 @@
 
 #define 		SIZE_LINE					164
 #define			HEIGHT_FRAME				122
-#define 		HIMAX_I2C_ADDR				0x24
+#define 		HIMAX_I2C_ADDR				0x24<<1
 
 #endif /* INC_HM01B0_REG_H_ */

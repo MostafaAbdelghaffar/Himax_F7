@@ -1,47 +1,67 @@
-#include "stm32f7xx_hal.h"
 #include "hm01b0.h"
+#include "main.h"
+extern I2C_HandleTypeDef hi2c2;
+
+//============================================================================================
+//Using HAL I2C Memory Write & Read function
 
 
-// Function to write an 8-bit value to a 16-bit register address
-void HM01B0_WriteRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr, uint8_t value) {
-    uint8_t data[3];
-    data[0] = (reg_addr >> 8) & 0xFF;  // High byte of register address
-    data[1] = reg_addr & 0xFF;          // Low byte of register address
-    data[2] = value;                    // Data to write
+void HM01B0_WriteRegister(uint16_t addr, uint8_t val)
+{
+	HAL_StatusTypeDef I2Cstatus;
+    I2Cstatus = HAL_I2C_Mem_Write(&hi2c2, HIMAX_I2C_ADDR, addr, 2, &val, sizeof(val), 500);
 
-    HAL_I2C_Master_Transmit(hi2c, HIMAX_I2C_ADDR << 1, data, 3, HAL_MAX_DELAY);
+    if(I2Cstatus != HAL_OK)
+    {
+    	printf("\r\nI2C write failed at address 0x%04x with error 0x%02x\r\n", addr, I2Cstatus);
+    }
+    else
+	{
+	printf("\r\nI2C Write -  HAL_OK \r\n");
+	}
+
 }
 
-// Function to read an 8-bit value from a 16-bit register address
-uint8_t HM01B0_ReadRegister(I2C_HandleTypeDef *hi2c, uint16_t reg_addr) {
-    uint8_t data[2];
-    uint8_t value;
 
-    data[0] = (reg_addr >> 8) & 0xFF;  // High byte of register address
-    data[1] = reg_addr & 0xFF;          // Low byte of register address
+uint8_t HM01B0_ReadRegister(uint16_t addr)
+{
 
-    // Send the register address
-    HAL_I2C_Master_Transmit(hi2c, HIMAX_I2C_ADDR << 1, data, 2, HAL_MAX_DELAY);
+	HAL_StatusTypeDef I2Cstatus;
+	uint8_t ReceiveBuffer[1];
 
-    // Read the data
-    HAL_I2C_Master_Receive(hi2c, HIMAX_I2C_ADDR << 1, &value, 1, HAL_MAX_DELAY);
+    I2Cstatus = HAL_I2C_Mem_Read(&hi2c2, HIMAX_I2C_ADDR, addr, 2, ReceiveBuffer, 1, 500); // ReceiveBuffer = &ReceiveBuffer[0]
 
-    return value;
+    if(I2Cstatus != HAL_OK)
+    {
+    	printf("\r\nI2C read failed at address 0x%04x with error 0x%02x\r\n", addr, I2Cstatus);
+    }
+    else
+    	{
+    	printf("\r\nI2C read - HAL_OK \r\n");
+    	}
+
+	return ReceiveBuffer[0];
 }
 
+<<<<<<< HEAD
 void HM01B0_Init(void) {
     // Example: read a read only register
     uint8_t reg_value = HM01B0_ReadRegister(&hi2c2, SILICON_REV);
 }
+=======
+//============================================================================================
+
+// HAL_StatusTypeDef HAL_I2C_IsDeviceReady(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint32_t Trials, uint32_t Timeout)
+// write a while loop to scan all the devices between 0 and 7f<<1
+// if it returns HAL_OK, print 1 , if it doesn't then 0 (AKA make sure that all of the devices are "READY"
+// this will tell me whether the i2c is connected properly.
+
+//then we need to find a reference code for ARDUCAM for HM01B0.
+// hm01b0-library-for-pico/src/hm01b0.c at main · ArmDeveloperEcosystem/hm01b0-library-for-pico
+// to double check: whether the vcc is on, testing
+>>>>>>> cc135242ae3ffa0fa7edc4281fbcc3bae39d0f95
 
 
-/*
 
-// Example of writing to a register
- *
-HM01B0_WriteRegister(&hi2c1, 0x0001, 0xFF);  // Write value 0xFF to register 0x0001
 
-// Example of reading from a register
-uint8_t reg_value = HM01B0_ReadRegister(&hi2c1, 0x0001);  // Read value from register 0x0001
 
-*/

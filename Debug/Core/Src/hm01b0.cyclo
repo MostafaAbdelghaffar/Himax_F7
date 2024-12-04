@@ -1,0 +1,2 @@
+../Core/Src/hm01b0.c:9:6:HM01B0_WriteRegister	2
+../Core/Src/hm01b0.c:26:9:HM01B0_ReadRegister	2
